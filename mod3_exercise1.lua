@@ -1,29 +1,22 @@
 local sampleNames = { "Maria", "Lucia", "Arthur", "Boris", "Newton" }
-local testN = 10000
+local testN = 1000000
 local users = {}
-local isSorted = false
 
-function registerUser(name)
+function registerUser(name, skipSort)
   local lowerName = string.lower(name)
-  local newUser = {id = #users +1 , name = lowerName}
-  if not isSorted then
-    table.insert(users, newUser)
-    return
+  table.insert(users, { id = #users, name = lowerName })
+
+  if not skipSort then
+    table.sort(users, function(a, b) return a.name < b.name end)
   end
-  local i = #users
-  while i > 0 and users[i].name > newUser.name do
-    users[i+1] = users[i]
-    i = i-1
-  end
-  users[i+1] = newUser
 end
 
 function registerUsers(names)
-  for _,name in ipairs(names) do
-    registerUser(name)
-  end -- O(n)
-  table.sort(users, function(a, b) return a.name < b.name end) -- O(n log n)
-  isSorted = true
+  for _, name in ipairs(names) do
+    registerUser(name, true)
+  end
+
+  table.sort(users, function(a, b) return a.name < b.name end)
 end
 
 function main()
@@ -32,6 +25,7 @@ function main()
   for i=1,testN do
     names[i] = sampleNames[((i-1) % n)+1]  .. i
   end
+
   registerUser('Fulano')
   registerUsers(names)
   registerUser('Beltrano')
