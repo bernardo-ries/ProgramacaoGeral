@@ -18,45 +18,52 @@ function setupRootElement()
   return root
 end
 
-function table.tostring(t, maxDepth, indent, visited)
-  local result = "{"
+function table.tostring(t, maxDepth, indent, visited, currentIndent)
+  local result = "{\n"
   if visited == nil then
     visited = {}
+  end
+  if currentIndent == nil then
+    currentIndent = ""
   end
   if visited[t] then
     return tostring(t)
   else
     visited[t] = true
   end
+
   local first = true
+  local nextIndent = currentIndent .. indent
+
   for k, v in pairs(t) do
     local formattedValue
-    if not first then
-      result = result .. ", "
-    else
-      first = false
-    end
     if type(v) == "string" then
-      formattedValue = "'" .. v .. "'"
+      formattedValue = string.format("%q", v)
     elseif type(v) == "table" then
       if maxDepth and maxDepth > 0 then
-        formattedValue = table.tostring(v, maxDepth - 1, indent, visited)
+        formattedValue = table.tostring(v, maxDepth - 1, indent, visited, nextIndent)
       else
-        formattedValue = "{...}"
+        formattedValue = "{}"
       end
     else
       formattedValue = tostring(v)
     end
+    if not first then
+      result = result .. ",\n"
+    else
+      first = false
+    end
+    result = result .. nextIndent
     if type(k) == "number" then
       result = result .. formattedValue
     else
-      if not (type(k) == "string" and k:match("^%a[%w_]*$")) then
-        k = "['" .. k .. "']"
+      if not (type(k) == "string" and k:match("^[_%a][_%w]*$")) then
+        k = "[" .. string.format("%q", k) .. "]"
       end
       result = result .. k .. " = " .. formattedValue
     end
   end
-  result = result .. "}"
+  result = result .. "\n" .. currentIndent .. "}"
   return result
 end
 
@@ -64,6 +71,5 @@ function main()
   local rootElement = setupRootElement()
   print(table.tostring(rootElement, 3, '  '))
 end
-
 
 main()
