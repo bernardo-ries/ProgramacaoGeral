@@ -19,7 +19,8 @@ function setupRootElement()
 end
 
 function table.tostring(t, maxDepth, indent, visited, currentIndent)
-  local result = "{\n"
+  local result = {}
+  table.insert(result, "{\n")
   if visited == nil then
     visited = {}
   end
@@ -27,14 +28,12 @@ function table.tostring(t, maxDepth, indent, visited, currentIndent)
     currentIndent = ""
   end
   if visited[t] then
-    return tostring(t)
+    return string.format("%q", tostring(t))
   else
     visited[t] = true
   end
-
   local first = true
   local nextIndent = currentIndent .. indent
-
   for k, v in pairs(t) do
     local formattedValue
     if type(v) == "string" then
@@ -49,22 +48,23 @@ function table.tostring(t, maxDepth, indent, visited, currentIndent)
       formattedValue = tostring(v)
     end
     if not first then
-      result = result .. ",\n"
+      table.insert(result, ",\n")
     else
       first = false
     end
-    result = result .. nextIndent
+    table.insert(result, nextIndent)
     if type(k) == "number" then
-      result = result .. formattedValue
+      table.insert(result, formattedValue)
     else
       if not (type(k) == "string" and k:match("^[_%a][_%w]*$")) then
         k = "[" .. string.format("%q", k) .. "]"
       end
-      result = result .. k .. " = " .. formattedValue
+      table.insert(result, k .. " = " .. formattedValue)
     end
   end
-  result = result .. "\n" .. currentIndent .. "}"
-  return result
+
+  table.insert(result, "\n" .. currentIndent .. "}")
+  return table.concat(result)
 end
 
 function main()
